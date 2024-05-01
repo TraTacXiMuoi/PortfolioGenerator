@@ -13,23 +13,23 @@
 //using namespace std;
 //
 //int wmain() {
-//    _setmode(_fileno(stdout), _O_U8TEXT);
-//    _setmode(_fileno(stdin), _O_U8TEXT);
+//   _setmode(_fileno(stdout), _O_U8TEXT);
+//   _setmode(_fileno(stdin), _O_U8TEXT);
+//    setlocale(LC_ALL, "en_US.UTF-8");
+////    wifstream file("d:\\second_year_hcmus\\ktlt\\website\\data.csv");
+////    file.imbue(locale(file.getloc(), new codecvt_utf8<wchar_t, 0x10ffff, consume_header>));
 //
-//    wifstream file("d:\\second_year_hcmus\\ktlt\\website\\data.csv");
-//    file.imbue(locale(file.getloc(), new codecvt_utf8<wchar_t, 0x10ffff, consume_header>));
+////    if (!file.is_open()) {
+////        wcerr << L"error opening file" << endl;
+////        return 1;
+////    }
 //
-//    if (!file.is_open()) {
-//        wcerr << L"error opening file" << endl;
-//        return 1;
-//    }
+////    wstring line;
+////    while (getline(file, line)) {
+////        wcout << line << endl;
+////    }
 //
-//    wstring line;
-//    while (getline(file, line)) {
-//        wcout << line << endl;
-//    }
-//
-//    return 0;
+//   return 0;
 //}
 #pragma endregion
 
@@ -211,44 +211,29 @@ void generatePortfolioOnDemand(char demand[], Student**& students, const char fo
 
 void makePortfolio(Student* student, const char folderPath[]);
 
+char* readByteFromCSVFile(const char folderPath[]);
+
+wchar_t printChoices(); 
+
+void menu(Student** students, const char folderPath[]);
+
 int main() {
     int result1 = _setmode(_fileno(stdout), _O_U8TEXT);
     int result2 = _setmode(_fileno(stdin), _O_U8TEXT);
     setlocale(LC_ALL, "en_US.UTF-8");
 
-    FILE* file = fopen("d:\\second_year_hcmus\\ktlt\\website\\data.csv", "rb");
-    if (!file) {
-        perror("Error opening file");
-        return 1;
-    }
+    wchar_t dataFile[256];
 
-    // find file size
-    fseek(file, 0, SEEK_END);
-    long long file_size = ftell(file);
-    rewind(file);
+    wprintf(L"Enter address of csv file: ");    
+    fgetws(dataFile, (int)sizeof(dataFile), stdin);
+    dataFile[wcscspn(dataFile, L"\n")] = L'\0';
 
-    // Read the raw bytes
-    char* raw_data = (char*)malloc(file_size);
-    if (!raw_data) {
-        perror("Memory error");
-        fclose(file);
-        return 1;
-    }
-
-    fread(raw_data, sizeof(char), file_size, file);
-    fclose(file);
-
-    // Check for BOM (UTF-8 BOM is 0xEF 0xBB 0xBF)
-    if (file_size >= 3 && raw_data[0] == 0xEF && raw_data[1] == 0xBB && raw_data[2] == 0xBF) {
-        memmove(raw_data, raw_data + 3, file_size - 3);
-        file_size -= 3;
-    }
+    char* raw_data = readByteFromCSVFile(wchar_to_byte(dataFile));
 
     size_t num_wide_chars = strlen((const char*)raw_data);
     wchar_t* unicode_string = (wchar_t*)malloc((num_wide_chars + 1) * sizeof(wchar_t));
     if (!unicode_string) {
-        perror("Memory allocation error");
-        return 1;
+        return NULL;
     }
 
     convertUTF8(raw_data, unicode_string);
@@ -263,14 +248,101 @@ int main() {
 
     makeStudentInfo(students, unicode_string, numberOfStudent);
 
-    //printStudentList(students);
+    wchar_t folderPath[256];
+    wprintf(L"Enter folder address to contain html files: ");    
+    fgetws(folderPath, (int)sizeof(folderPath), stdin);
 
-    generatePortfolio(students);
+    menu(students, wchar_to_byte(folderPath));
 
     free(unicode_string);
     free(raw_data);
     return 0;
+}
 
+wchar_t printChoices(){
+    wprintf(L"1. Choose students to make portfolio pages.\n");
+    wprintf(L"2. Generate a portfolio page for all students.\n");
+    wprintf(L"Press any key to quit program.\n\n");
+    wprintf(L"Enter the number of your choice: ");
+    wchar_t choice;
+    choice = fgetwc(stdin);
+    return choice;
+}
+
+void menu(Student** students, const char folderPath[]) {
+    wprintf(L"This is a brief look at student information stored in a CSV file:\n");
+    printStudentList(students);
+
+    wchar_t choice = printChoices();
+
+    if(choice == L'1'){
+        system("cls");
+        wprintf(L"Please enter the student IDs for which you would like to generate portfolio pages: ");
+        wchar_t ids[512];
+        fgetws(ids, 512, stdin);
+        ids[wcscspn(ids, L"\n")] = L'\0';
+        generatePortfolioOnDemand(wchar_to_byte(ids), students, folderPath);
+        wprintf(L"1. Come back to menu || Press any key to quit program");
+        
+        wchar_t subChoice;
+        subChoice = fgetwc(stdin);
+
+        if(subChoice == L'1'){
+            system("cls");
+            menu(students, folderPath);
+        }
+        else{
+            return;
+        }
+    }
+    if(choice == L'2'){
+        system("cls");
+        generatePortfolio(students);
+        wprintf(L"1. Come back to menu || Press any key to quit program\n");
+        
+        wchar_t subChoice;
+        subChoice = fgetwc(stdin);
+
+        if(subChoice == L'1'){
+            system("cls");
+            menu(students, folderPath);
+        }
+        else{
+            return;
+        }
+    }
+    else{
+        return;
+    }
+}
+
+char* readByteFromCSVFile(const char filePath[]) {
+    FILE* file = fopen(filePath, "rb");
+    if (!file) {
+        perror("Error opening file");
+        return NULL;
+    }
+
+    // find file size
+    fseek(file, 0, SEEK_END);
+    long long file_size = ftell(file);
+    rewind(file);
+
+    // Read the raw bytes
+    char* raw_data = (char*)malloc(file_size);
+    if (!raw_data) {
+        return NULL;
+    }
+
+    fread(raw_data, sizeof(char), file_size, file);
+    fclose(file);
+
+    // Check for BOM (UTF-8 BOM is 0xEF 0xBB 0xBF)
+    if (file_size >= 3 && raw_data[0] == 0xEF && raw_data[1] == 0xBB && raw_data[2] == 0xBF) {
+        memmove(raw_data, raw_data + 3, file_size - 3);
+        file_size -= 3;
+    }
+    return raw_data;
 }
 
 void convertUTF8(const char* utf8_data, wchar_t* wchar_string) {
@@ -308,7 +380,7 @@ void convertUTF8(const char* utf8_data, wchar_t* wchar_string) {
         mbstate_t state = { 0 };
         wchar_t wchar;
         size_t converted = mbrtowc(&wchar, &utf8_data[i], char_len, &state);
-        
+    
         // check if conversion isn't successful
         if (converted == (size_t) - 1 || converted == (size_t) - 2) {
             wchar_string[wchar_index++] = L'?';
@@ -356,11 +428,11 @@ wchar_t* takeTextInsideQuotation(const wchar_t* text) {
 }
 
 void separateHobby(wchar_t* hobby, size_t& numOfHobby, Student*& student) {
-    
+
     size_t len = wcslen(hobby);
-    
+
     wchar_t* tok = wcstok(hobby, L";", NULL);
-    
+
     while (tok != NULL) {
         wchar_t* tmp = takeTextInsideQuotation(tok);
 
@@ -395,8 +467,8 @@ void makeStudentInfo(Student** &students, wchar_t* info, size_t& studentNumber) 
         int year;
 
         int numOfParse = swscanf(line, L"%[^;];%[^;];%[^;];%d;%[^;];%[^;];%999[^;];%999[^\n]", 
-                                 id, name, faculty, &year, dob, image, description, hobby);
-        
+                                id, name, faculty, &year, dob, image, description, hobby);
+    
         id[wcslen(id)] = L'\0';
         name[wcslen(name)] = L'\0';
         faculty[wcslen(faculty)] = L'\0';
@@ -442,7 +514,7 @@ void copyFile(char* sourceFilePath, char* destinationFilePath) {
         while ((bytesRead = fread(buffer, 1, sizeof(buffer), sourceFile)) > 0) {
             fwrite(buffer, 1, bytesRead, destinationFile);
         }
-        printf("File copied successfully.\n");
+        wprintf(L"File copied successfully.\n");
     }
     else {
         fprintf(stderr, "Error: Unable to copy file.\n");
@@ -567,7 +639,7 @@ void makePortfolio(Student* student, const char folderPath[]) {
         fprintf(outputFile, "    </body>\n");
         fprintf(outputFile, "</html>\n");
         fclose(outputFile);
-        printf("HTML portfolio page for student %s generated successfully.\n", id);
+        wprintf(L"HTML portfolio page for student %ls generated successfully.\n", student->id);
         free(id);
     }
     else {
@@ -581,6 +653,7 @@ void generatePortfolioOnDemand(char demand[], Student**& students, const char fo
     Student** tmp = students;
     while (*tmp != NULL) {
         numberOfStudent++;
+        tmp++;
     }
 
     char** idList = (char**)malloc(numberOfStudent * sizeof(char*));
@@ -610,24 +683,24 @@ void generatePortfolioOnDemand(char demand[], Student**& students, const char fo
 }
 
 void generatePortfolio(Student** students) {
-    wchar_t folderPath[256];
+    wchar_t folderPath[1024];
     wprintf(L"Enter the folder address to store the HTML portfolio pages: ");
-    fgetws(folderPath, sizeof(folderPath), stdin);
+    fgetws(folderPath, (int)sizeof(folderPath), stdin);
     folderPath[wcscspn(folderPath, L"\n")] = L'\0';
 
-    char sourceCSSFilePath[] = "Personal.css";
+    wchar_t sourceCSSFilePath[] = L"Personal.css";
 
-    char destinationCSSFilePath[256];
-    strcpy(destinationCSSFilePath, folderPath);
-    strcat(destinationCSSFilePath, "/Personal.css");
+    wchar_t destinationCSSFilePath[256];
+    wcscpy(destinationCSSFilePath, folderPath);
+    wcscat(destinationCSSFilePath, L"/Personal.css");
 
-    copyFile(sourceCSSFilePath, destinationCSSFilePath);
+    copyFile(wchar_to_byte(sourceCSSFilePath), wchar_to_byte(destinationCSSFilePath));
 
     Student** currentStudent = students;
 
     while (*currentStudent != NULL) {
-        char* id = wchar_to_byte((*currentStudent)->id);
-        makePortfolio(*currentStudent, folderPath);
+        makePortfolio(*currentStudent, wchar_to_byte(folderPath));
         currentStudent++;
     }
 }
+

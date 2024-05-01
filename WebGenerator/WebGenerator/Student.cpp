@@ -38,5 +38,5 @@ void printStudentList(Student** students){
 void printStudentInfo(Student* student) {
     wprintf(L"%ls  %ls\n", student->id, student->name);
     wprintf(L"Khoa: %ls\n", student->faculty);
-    wprintf(L"Ngày sinh: %ls\n", student->dob);
+    wprintf(L"NgÃ y sinh: %ls\n", student->dob);
 }
