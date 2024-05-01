@@ -1,0 +1,396 @@
+@charset "utf-8";
+
+* {
+    padding: 0;
+    margin: 0;
+}
+
+.DivClear {
+    clear: both;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.DivClearNone {
+    clear: both;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+html, body {
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+    background-image: url(Images/Star_BG1.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.Layout_container {
+    width: 995px;
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -147px;
+}
+
+.Layout_Banner {
+    width: 100%;
+    height: 150px;
+    background-image: url(Images/BG_banner.jpg);
+    background-repeat: repeat-x;
+    background-size: 100% ;
+    display: flex;
+    position: relative;
+}
+
+.Layout_Banner #logo{
+    padding-left: 50px;
+    height: 100%;
+}
+
+.Header_Title{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    /* position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); */
+    font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-weight: bold;
+    color: rgb(169, 255, 178);
+    font-size: 30px;
+
+}
+
+.Layout_MainContents {
+    width: 100%;
+}
+
+.Layout_Push, .Layout_Footer {
+    width: 100%;
+    height: 300px;
+    margin: 0 auto;
+    background-image: url(Images/BG_banner.jpg);
+    background-size: cover;
+    border-top-right-radius: 25px;
+    border-top-left-radius: 25px;
+}
+
+
+/*------------------------------*/
+A {
+    COLOR: #565656;
+    TEXT-DECORATION: none
+}
+
+    A:active {
+        COLOR: #565656;
+        TEXT-DECORATION: none
+    }
+
+    A:hover {
+        COLOR: #ff9900;
+        TEXT-DECORATION: none
+    }
+
+    A:visited {
+    }
+
+.TopControl {
+    float: right;
+    padding-top: 16px;
+    padding-right: 30px;
+    padding-bottom: 16px;
+    text-align: right;
+}
+
+.Textbox {
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-top-style: solid;
+    border-right-style: solid;
+    border-bottom-style: solid;
+    border-left-style: solid;
+    background-color: #e4ebea;
+}
+
+.LoginText {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10.5pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #0c2a6d;
+}
+
+.TopControlText {
+    font-size: 10pt;
+    color: #000;
+    letter-spacing: 0.05em;
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 8px;
+    margin-bottom: 10px;
+}
+
+
+.PersonalAddress {
+    height: 237px;
+    width: 100%;
+    background-color: #D7FFF5;
+}
+
+.Personal_RightBG {
+    height: 237px;
+    width: 163px;
+    background-image: url(Images/BG_PersonalRight.gif);
+    background-repeat: no-repeat;
+    float: right;
+}
+
+.Personal_Main_Information {
+    height: 200px;
+    display: flex;
+    background-image: url(Images/BG_banner.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center bottom 57%;
+    border-bottom-right-radius: 25px;
+    border-bottom-left-radius: 25px;
+}
+
+.Personal_Location {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #403b33;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    border-bottom-left-radius: 25px;
+}
+
+.Personal_HinhcanhanKhung {
+    height: 100%;
+    float: right;
+    border-radius: 25px;
+    backdrop-filter: blur(8px);
+}
+
+.Personal_Hinhcanhan {
+    height: 100%;
+    width: fit-content;
+    border-radius: 25px;
+    backdrop-filter: blur(8px);
+}
+
+.Personal_Location .Personal_FullName{
+    font-size: x-large;
+    font-weight: bold;
+    color: #ffd5a4;
+}
+
+.Personal_Location .Personal_Department{
+    font-size: medium;
+    font-weight: bolder;
+    color: #D7FFF5;
+}
+
+.Personal_FullName {
+    font-size: 15pt;
+    font-weight: bold;
+    padding-left: 10px;
+    padding-bottom: 5px;
+    letter-spacing: 80%;
+}
+
+.Personal_Position {
+    font-size: 12pt;
+    font-family: Calibri,Arial, Helvetica, sans-serif;
+    letter-spacing: 0.0em;
+}
+
+.Personal_Phone {
+    font-size: 10pt;
+    font-family: Calibri,Arial, Helvetica, sans-serif;
+    letter-spacing: 0.0em;
+}
+
+.Personal_Website {
+    font-family: Calibri,Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: #565656;
+}
+/*------------------------------*/
+.MainContain {
+    clear: both;
+    width: 100%;
+    width: 100%;
+    background-image: url(Images/Main_Contain2.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    border-radius: 25px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.MainContain_Top {
+    width: auto;
+    padding-left: 50px;
+    padding-bottom: 20px;
+    border-radius: 25px;
+}
+
+.InfoGroup {
+    text-transform: uppercase;
+    color: #51ffe2;
+    font-family: Calibri,Arial, Helvetica, sans-serif;
+    font-size: x-large;
+    padding-top: 25px;
+    font-weight: bold;
+    padding-bottom: 10px;
+}
+.TextInList {
+    font-family: Calibri,Arial, Helvetica, sans-serif;
+    font-size: 20px;
+    text-align: justify;
+    color: #D7CEE1;
+    font-weight: bolder;
+    list-style-type: none;
+}
+
+.Description{
+    font-family: Calibri,Arial, Helvetica, sans-serif;
+    font-size: 20px;
+    font-weight: bolder;
+    text-align: justify;
+    color: #D7CEE1;
+}
+
+.MainContain_RightTop {
+    float: right;
+    width: 368px;
+    height: 200px;
+}
+
+.MainContain_ButtonSpace {
+    clear: both;
+    height: 45px;
+    width: 100%;
+    text-align: left;
+    vertical-align: middle;
+    font-family: Calibri,Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #000;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+}
+
+.Button_Toolbar {
+    float: left;
+    width: 35px;
+    height: 36px;
+}
+
+.Button_Title {
+    float: left;
+    text-align: left;
+    vertical-align: middle;
+    padding-top: 10px;
+    padding-left: 5px;
+}
+
+.MainContain_LeftTop {
+    float: left;
+    padding-left: 80px;
+    width: 520px;
+}
+
+.MainContain_Center {
+    clear: both;
+    padding-left: 80px;
+}
+
+
+.InfoSubGroup {
+    color: #558ED5;
+    font-family: Calibri,Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    padding-top: 10px;
+    font-weight: bold;
+    padding-bottom: 10px;
+}
+
+
+li {
+    margin-bottom: 5px;
+}
+
+ol li {
+    font-family: Calibri,Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-style: italic;
+    color: #565656;
+    font-weight: bold;
+}
+
+.Paper {
+    font-family: Calibri,Arial, Helvetica, sans-serif;
+    color: #565656;
+    font-size: 11px;
+    margin-bottom: 10px;
+}
+
+.PaperName {
+    font-weight: bold;
+}
+
+.PaperAuthors {
+}
+
+.PaperOthers {
+}
+
+/*-----------copy right---------------*/
+.divCopyright {
+    height: 100%;
+    width: auto;
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    padding-right: 10px;
+    letter-spacing: 0.1em;
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+}
+
+
+a.link:active, a.link:visited, a.link:link {
+    text-decoration: none;
+}
+
+a.link:hover {
+    text-decoration: none;
+    color: #FF6600;
+}
+
+a.linkIcon:active, a.linkIcon:visited, a.linkIcon:link {
+    text-decoration: none;
+    color: #000;
+}
+
+a.linkIcon:hover {
+    text-decoration: none;
+    color: #FF6600;
+}
