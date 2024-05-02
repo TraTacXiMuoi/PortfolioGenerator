@@ -201,7 +201,7 @@ void separateHobby(wchar_t* hobby, size_t& numOfHobby, Student*& student); // fu
 
 void copyFile(const char* sourceFilePath, const char* destinationFilePath); // function copy file to specific folder
 
-void generatePortfolio(Student** students); // function to generate all profile pages
+void generatePortfolio(Student** students, const char folderPath[]); // function to generate all profile pages
 
 char* wchar_to_byte(wchar_t src[]); // function turn wchar_t into byte by utf8 encode
 
@@ -251,6 +251,7 @@ int main() {
     wchar_t folderPath[256];
     wprintf(L"Enter folder address to contain html files: ");    
     fgetws(folderPath, (int)sizeof(folderPath), stdin);
+    folderPath[wcscspn(folderPath, L"\n")] = L'\0';
 
     menu(students, wchar_to_byte(folderPath));
 
@@ -262,15 +263,19 @@ int main() {
 wchar_t printChoices(){
     wprintf(L"1. Choose students to make portfolio pages.\n");
     wprintf(L"2. Generate a portfolio page for all students.\n");
-    wprintf(L"Press any key to quit program.\n\n");
+    wprintf(L"Press Q to quit program.\n\n");
     wprintf(L"Enter the number of your choice: ");
     wchar_t choice;
     choice = fgetwc(stdin);
+    while (choice == L'\n') {
+        choice = fgetwc(stdin);
+    }
     return choice;
 }
 
 void menu(Student** students, const char folderPath[]) {
-    wprintf(L"This is a brief look at student information stored in a CSV file:\n");
+    system("cls");
+    wprintf(L"This is a brief look at student information stored in the CSV file:\n");
     printStudentList(students);
 
     wchar_t choice = printChoices();
@@ -278,14 +283,22 @@ void menu(Student** students, const char folderPath[]) {
     if(choice == L'1'){
         system("cls");
         wprintf(L"Please enter the student IDs for which you would like to generate portfolio pages: ");
+        
         wchar_t ids[512];
         fgetws(ids, 512, stdin);
+        while (ids[0] == L'\n') {
+            fgetws(ids, 512, stdin);
+        }
         ids[wcscspn(ids, L"\n")] = L'\0';
-        generatePortfolioOnDemand(wchar_to_byte(ids), students, folderPath);
-        wprintf(L"1. Come back to menu || Press any key to quit program");
         
+        generatePortfolioOnDemand(wchar_to_byte(ids), students, folderPath);
+
+        wprintf(L"1. Come back to menu || Press Q to quit program: ");
         wchar_t subChoice;
         subChoice = fgetwc(stdin);
+        while (subChoice == L'\n') {
+            subChoice = fgetwc(stdin);
+        }
 
         if(subChoice == L'1'){
             system("cls");
@@ -297,11 +310,14 @@ void menu(Student** students, const char folderPath[]) {
     }
     if(choice == L'2'){
         system("cls");
-        generatePortfolio(students);
-        wprintf(L"1. Come back to menu || Press any key to quit program\n");
+        generatePortfolio(students, folderPath);
         
+        wprintf(L"1. Come back to menu || Press any key to quit program: ");
         wchar_t subChoice;
         subChoice = fgetwc(stdin);
+        while (subChoice == L'\n') {
+            subChoice = fgetwc(stdin);
+        }
 
         if(subChoice == L'1'){
             system("cls");
@@ -553,6 +569,7 @@ void makePortfolio(Student* student, const char folderPath[]) {
     char* id = wchar_to_byte(student->id);
     char fileName[256];
     strcpy(fileName, folderPath);
+    strcat(fileName, "/");
     strcat(fileName, id);
     strcat(fileName, ".html");
 
@@ -671,35 +688,31 @@ void generatePortfolioOnDemand(char demand[], Student**& students, const char fo
         index++;
     }
 
-    tmp = students;
-    size_t i = 0;
-    while (tmp != NULL && i < index) {
-        if (strcmp(wchar_to_byte((*tmp)->id), idList[i]) == 0) {
-            makePortfolio(*tmp, folderPath);
-            i++;
+    for (size_t i = 0; i < index; i++) {
+        for(size_t j = 0; j < numberOfStudent; j++) {
+            if (strcmp(wchar_to_byte((students[j]->id)), idList[i]) == 0) {
+                makePortfolio(students[j], folderPath);
+                break;
+            }
         }
-        tmp++;
     }
+
+    free(idList);
 }
 
-void generatePortfolio(Student** students) {
-    wchar_t folderPath[1024];
-    wprintf(L"Enter the folder address to store the HTML portfolio pages: ");
-    fgetws(folderPath, (int)sizeof(folderPath), stdin);
-    folderPath[wcscspn(folderPath, L"\n")] = L'\0';
+void generatePortfolio(Student** students, const char folderPath[]) {
+    char sourceCSSFilePath[] = "Personal.css";
 
-    wchar_t sourceCSSFilePath[] = L"Personal.css";
+    char destinationCSSFilePath[256];
+    strcpy(destinationCSSFilePath, folderPath);
+    strcat(destinationCSSFilePath, "/Personal.css");
 
-    wchar_t destinationCSSFilePath[256];
-    wcscpy(destinationCSSFilePath, folderPath);
-    wcscat(destinationCSSFilePath, L"/Personal.css");
-
-    copyFile(wchar_to_byte(sourceCSSFilePath), wchar_to_byte(destinationCSSFilePath));
+    copyFile(sourceCSSFilePath, destinationCSSFilePath);
 
     Student** currentStudent = students;
 
     while (*currentStudent != NULL) {
-        makePortfolio(*currentStudent, wchar_to_byte(folderPath));
+        makePortfolio(*currentStudent, folderPath);
         currentStudent++;
     }
 }
