@@ -197,63 +197,173 @@ void makeStudentInfo(Student** &students, wchar_t* info, size_t& studentNumber);
 
 void modifyStr(wchar_t* line); // function to make comma-separate value into semicolon-separate value for better reading
 
-void separateHobby(wchar_t* hobby, size_t& numOfHobby, Student*& student); // function separate hobby
+void separateHobby(wchar_t* hobby, size_t& numOfHobby, Student*& student); // function separates hobby
 
-void copyFile(const char* sourceFilePath, const char* destinationFilePath); // function copy file to specific folder
+void copyFile(const char* sourceFilePath, const char* destinationFilePath); // function copies file to specific folder
 
-void generatePortfolio(Student** students, const char folderPath[]); // function to generate all profile pages
+void copyFolder(const char* src_path, const char* dest_path); // function copies folder
 
-char* wchar_to_byte(wchar_t src[]); // function turn wchar_t into byte by utf8 encode
+void generatePortfolio(Student** students, const char folderPath[], const int config[]); // generate all profile pages
 
-wchar_t* takeTextInsideQuotation(const wchar_t* text); // function take text inside "" mark read in csv file
+char* wchar_to_byte(wchar_t src[]); // turn wchar_t into byte by utf8 encode
 
-void generatePortfolioOnDemand(char demand[], Student**& students, const char folderPath[]);
+wchar_t* takeTextInsideQuotation(const wchar_t* text); // take text inside "" mark read in csv file
 
-void makePortfolio(Student* student, const char folderPath[]);
+void makePortfolioOnChosenStudent(char demand[], Student**& students, const char folderPath[], const int config[]); // function takes in student ids and only generate portfolio page for those students  
 
-char* readByteFromCSVFile(const char folderPath[]);
+void makePortfolio(Student* student, const char folderPath[], const int config[]); // "Make portfolio page with the provided student."
 
-wchar_t printChoices(); 
+char* readByteFromCSVFile(const char folderPath[]); // read all byte in csv file (skip the BOM if presented)
 
-void menu(Student** students, const char folderPath[]);
+void configField(char field[], int config[]); // decide which field to display on the portfolio page
+
+wchar_t printChoices(); // print choices of the menu and return the choice
+
 
 int main() {
+    // set the language and encoding method
     int result1 = _setmode(_fileno(stdout), _O_U8TEXT);
     int result2 = _setmode(_fileno(stdin), _O_U8TEXT);
     setlocale(LC_ALL, "en_US.UTF-8");
 
-    wchar_t dataFile[256];
+    wchar_t dataFile[512]; // address of the csv file
 
-    wprintf(L"Enter address of csv file: ");    
-    fgetws(dataFile, (int)sizeof(dataFile), stdin);
-    dataFile[wcscspn(dataFile, L"\n")] = L'\0';
+    wprintf(L"Enter address of csv file: ");           //  
+    fgetws(dataFile, (int)sizeof(dataFile), stdin);    //   get the address of the csv file
+    dataFile[wcscspn(dataFile, L"\n")] = L'\0';        // 
 
-    char* raw_data = readByteFromCSVFile(wchar_to_byte(dataFile));
+    char* raw_data = readByteFromCSVFile(wchar_to_byte(dataFile)); // read data from csv file as raw bytes
 
-    size_t num_wide_chars = strlen((const char*)raw_data);
+    size_t num_wide_chars = strlen((const char*)raw_data); // string which stores unicode data 
     wchar_t* unicode_string = (wchar_t*)malloc((num_wide_chars + 1) * sizeof(wchar_t));
     if (!unicode_string) {
         return NULL;
     }
 
-    convertUTF8(raw_data, unicode_string);
+    convertUTF8(raw_data, unicode_string); // convert raw bytes into unicode string
 
-    size_t numberOfStudent = 1;
-    Student** students = (Student**)malloc(numberOfStudent * sizeof(Student*));
-    if (students == NULL) return 1;
+    size_t numberOfStudent = 10;                                                    //    
+    Student** students = (Student**)malloc(numberOfStudent * sizeof(Student*));     //  initialize Student array to store 
+    if (students == NULL) return 1;                                                 //  students' infomation
+                                                                                    //
+    for (size_t i = 0; i < numberOfStudent; i++) {                                  //
+        students[i] = nullptr;                                                      //
+    }                                                                               //
 
-    for (size_t i = 0; i < numberOfStudent; i++) {
-        students[i] = nullptr;
+    makeStudentInfo(students, unicode_string, numberOfStudent);     // parse data from unicode string into Student array
+
+    wchar_t folderPath[256];                                        // 
+    wprintf(L"Enter folder address to contain html files: ");       // get the address to store html, css and images files
+    fgetws(folderPath, (int)sizeof(folderPath), stdin);             // 
+    folderPath[wcscspn(folderPath, L"\n")] = L'\0';                 // 
+
+    char destCSSFilePath[256];                               //
+    strcpy(destCSSFilePath, wchar_to_byte(folderPath));      //
+    strcat(destCSSFilePath, "/Personal.css");                //  copy css file
+    copyFile("Personal.css", destCSSFilePath);               // 
+
+    char destImageFolderPath[256];                                     //
+    strcpy(destImageFolderPath, wchar_to_byte(folderPath));            //  copy images folder
+    strcat(destImageFolderPath, "\\Images");                            //
+    copyFolder("Images", destImageFolderPath);                         //
+
+    int config[8] = { 0 };
+
+    //menu section
+    while (true) {
+        system("cls");
+        wprintf(L"This is a brief look at student information stored in the CSV file:\n");
+        printStudentList(students);
+
+        wchar_t choice = printChoices();
+
+        if (choice == L'1') {
+            system("cls");
+            wprintf(L"Please enter the student IDs for which you would like to generate portfolio pages: ");
+
+            wchar_t ids[512];
+            fgetws(ids, 512, stdin);
+            while (ids[0] == L'\n') {
+                fgetws(ids, 512, stdin);
+            }
+            ids[wcscspn(ids, L"\n")] = L'\0';
+
+            makePortfolioOnChosenStudent(wchar_to_byte(ids), students, wchar_to_byte(folderPath), config);
+
+            wprintf(L"1. Come back to menu || Press Q to quit program: ");
+            wchar_t subChoice;
+            subChoice = fgetwc(stdin);
+            while (subChoice == L'\n') {
+                subChoice = fgetwc(stdin);
+            }
+
+            if (subChoice == L'1') {
+                system("cls");
+                continue;
+            }
+            else {
+                break;
+            }
+        }
+        if (choice == L'2') {
+            system("cls");
+            generatePortfolio(students, wchar_to_byte(folderPath), config);
+
+            wprintf(L"1. Come back to menu || Press Q to quit program: ");
+            wchar_t subChoice;
+            subChoice = fgetwc(stdin);
+            while (subChoice == L'\n') {
+                subChoice = fgetwc(stdin);
+            }
+
+            if (subChoice == L'1') {
+                system("cls");
+                continue;
+            }
+            else {
+                break;
+            }
+        }
+        if (choice == L'3') {
+            system("cls");
+            wprintf(L"Choose which field you want to display on the page\n");
+            wprintf(L"1. Name\n");
+            wprintf(L"2. Student's ID\n");
+            wprintf(L"3. Year\n");
+            wprintf(L"4. Faculty\n");
+            wprintf(L"5. Date of birth\n");
+            wprintf(L"6. Hobby\n");
+            wprintf(L"7. Student description\n");
+            wprintf(L"Enter the number of field which you want to display: ");
+
+            wchar_t fields[512];
+            fgetws(fields, 512, stdin);
+            while (fields[0] == L'\n') {
+                fgetws(fields, 512, stdin);
+            }
+            fields[wcscspn(fields, L"\n")] = L'\0';
+
+            configField(wchar_to_byte(fields), config);
+
+            wprintf(L"1. Come back to menu || Press Q to quit program: ");
+            wchar_t subChoice;
+            subChoice = fgetwc(stdin);
+            while (subChoice == L'\n') {
+                subChoice = fgetwc(stdin);
+            }
+
+            if (subChoice == L'1') {
+                system("cls");
+                continue;
+            }
+            else {
+                break;
+            }
+        }
+        else {
+            break;
+        }
     }
-
-    makeStudentInfo(students, unicode_string, numberOfStudent);
-
-    wchar_t folderPath[256];
-    wprintf(L"Enter folder address to contain html files: ");    
-    fgetws(folderPath, (int)sizeof(folderPath), stdin);
-    folderPath[wcscspn(folderPath, L"\n")] = L'\0';
-
-    menu(students, wchar_to_byte(folderPath));
 
     free(unicode_string);
     free(raw_data);
@@ -263,6 +373,7 @@ int main() {
 wchar_t printChoices(){
     wprintf(L"1. Choose students to make portfolio pages.\n");
     wprintf(L"2. Generate a portfolio page for all students.\n");
+    wprintf(L"3. Choose which field to display on the profile page.\n");
     wprintf(L"Press Q to quit program.\n\n");
     wprintf(L"Enter the number of your choice: ");
     wchar_t choice;
@@ -271,65 +382,6 @@ wchar_t printChoices(){
         choice = fgetwc(stdin);
     }
     return choice;
-}
-
-void menu(Student** students, const char folderPath[]) {
-    system("cls");
-    wprintf(L"This is a brief look at student information stored in the CSV file:\n");
-    printStudentList(students);
-
-    wchar_t choice = printChoices();
-
-    if(choice == L'1'){
-        system("cls");
-        wprintf(L"Please enter the student IDs for which you would like to generate portfolio pages: ");
-        
-        wchar_t ids[512];
-        fgetws(ids, 512, stdin);
-        while (ids[0] == L'\n') {
-            fgetws(ids, 512, stdin);
-        }
-        ids[wcscspn(ids, L"\n")] = L'\0';
-        
-        generatePortfolioOnDemand(wchar_to_byte(ids), students, folderPath);
-
-        wprintf(L"1. Come back to menu || Press Q to quit program: ");
-        wchar_t subChoice;
-        subChoice = fgetwc(stdin);
-        while (subChoice == L'\n') {
-            subChoice = fgetwc(stdin);
-        }
-
-        if(subChoice == L'1'){
-            system("cls");
-            menu(students, folderPath);
-        }
-        else{
-            return;
-        }
-    }
-    if(choice == L'2'){
-        system("cls");
-        generatePortfolio(students, folderPath);
-        
-        wprintf(L"1. Come back to menu || Press any key to quit program: ");
-        wchar_t subChoice;
-        subChoice = fgetwc(stdin);
-        while (subChoice == L'\n') {
-            subChoice = fgetwc(stdin);
-        }
-
-        if(subChoice == L'1'){
-            system("cls");
-            menu(students, folderPath);
-        }
-        else{
-            return;
-        }
-    }
-    else{
-        return;
-    }
 }
 
 char* readByteFromCSVFile(const char filePath[]) {
@@ -519,7 +571,7 @@ void makeStudentInfo(Student** &students, wchar_t* info, size_t& studentNumber) 
     }
 }
 
-void copyFile(char* sourceFilePath, char* destinationFilePath) {
+void copyFile(const char* sourceFilePath, const char* destinationFilePath) {
     FILE* sourceFile = fopen(sourceFilePath, "rb");
     FILE* destinationFile = fopen(destinationFilePath, "wb");
 
@@ -544,6 +596,17 @@ void copyFile(char* sourceFilePath, char* destinationFilePath) {
     }
 }
 
+void copyFolder(const char* src_path, const char* dest_path) {
+    char command1[1024];
+    snprintf(command1, sizeof(command1), "mkdir %s", dest_path);
+
+    char command2[1024];
+    snprintf(command2, sizeof(command2), "xcopy %s %s /E /H", src_path, dest_path);
+
+    system(command1);
+    system(command2);
+}
+
 char* wchar_to_byte(wchar_t src[]) {
     size_t wideStringLength = wcslen(src);
 
@@ -565,13 +628,29 @@ char* wchar_to_byte(wchar_t src[]) {
     }
 }
 
-void makePortfolio(Student* student, const char folderPath[]) {
+void makePortfolio(Student* student, const char folderPath[], const int config[]) {
     char* id = wchar_to_byte(student->id);
     char fileName[256];
     strcpy(fileName, folderPath);
     strcat(fileName, "/");
     strcat(fileName, id);
     strcat(fileName, ".html");
+
+    bool personalInfo = false;
+    bool personalHobby = false;
+    bool personalDescription = false;
+
+    for (int i = 1; i <= 7; i++) {
+        if (config[i] && i >= 1 && i <= 5) {
+            personalInfo = true;
+        }
+        if (config[i] && i == 6) {
+            personalHobby = true;
+        }
+        if (config[i] && i == 7) {
+            personalDescription = true;
+        }
+    }
 
     FILE* outputFile = fopen(fileName, "w");
     if (outputFile != NULL) {
@@ -606,33 +685,57 @@ void makePortfolio(Student* student, const char folderPath[]) {
         fprintf(outputFile, "                <div class=\"MainContain\">\n");
         fprintf(outputFile, "                    <!-- Begin Top Region -->\n");
         fprintf(outputFile, "                    <div class=\"MainContain_Top\">\n");
-        wchar_t info[] = L"Thông tin cá nhân";
-        fprintf(outputFile, "                        <div class=\"InfoGroup\">%s</div>\n", wchar_to_byte(info));
-        fprintf(outputFile, "                        <div>\n");
-        fprintf(outputFile, "                            <ul class=\"TextInList\">\n");
-        wchar_t fullName[] = L"Họ và tên";
-        fprintf(outputFile, "                                <li>%s: %s</li>\n", wchar_to_byte(fullName), wchar_to_byte(student->name));
-        fprintf(outputFile, "                                <li>MSSV: %s</li>\n", id);
-        wchar_t facu[] = L"Sinh viên khoa";
-        fprintf(outputFile, "                                <li>%s %s</li>\n", wchar_to_byte(facu), wchar_to_byte(student->faculty));
-        wchar_t DOB[] = L"Ngày sinh";
-        fprintf(outputFile, "                                <li>%s: %s</li>\n", wchar_to_byte(DOB), wchar_to_byte(student->dob));
-        fprintf(outputFile, "                            </ul>\n");
-        fprintf(outputFile, "                        </div>\n");
-        wchar_t hobb[] = L"Sở thích";
-        fprintf(outputFile, "                        <div class=\"InfoGroup\">%s</div>\n", wchar_to_byte(hobb));
-        fprintf(outputFile, "                        <div>\n");
-        fprintf(outputFile, "                            <ul class=\"TextInList\">\n");
-        for (int i = 0; i < student->numberOfHobby; ++i) {
-            fprintf(outputFile, "                                <li>%s</li>\n", wchar_to_byte(student->hobby[i].name));
+        
+        if (personalInfo) {
+            wchar_t info[] = L"Thông tin cá nhân";
+            fprintf(outputFile, "                        <div class=\"InfoGroup\">%s</div>\n", wchar_to_byte(info));
+            fprintf(outputFile, "                        <div>\n");
+            fprintf(outputFile, "                            <ul class=\"TextInList\">\n");
+            if (config[1]) {
+                wchar_t fullName[] = L"Họ và tên";
+                fprintf(outputFile, "                                <li>%s: %s</li>\n", wchar_to_byte(fullName), wchar_to_byte(student->name));
+            }
+            if (config[2]) {
+                fprintf(outputFile, "                                <li>MSSV: %s</li>\n", id);
+            }
+            if (config[3]) {
+                wchar_t year[] = L"Khóa";
+                fprintf(outputFile, "                                <li>%s %d</li>\n", wchar_to_byte(year), student->year);
+            }
+            if (config[4]) {
+                wchar_t facul[] = L"Sinh viên khoa";
+                fprintf(outputFile, "                                <li>%s %s</li>\n", wchar_to_byte(facul), wchar_to_byte(student->faculty));
+            }
+            if (config[5]) {
+                wchar_t DOB[] = L"Ngày sinh";
+                fprintf(outputFile, "                                <li>%s: %s</li>\n", wchar_to_byte(DOB), wchar_to_byte(student->dob));
+                fprintf(outputFile, "                            </ul>\n");
+                fprintf(outputFile, "                        </div>\n");
+            }
         }
-        fprintf(outputFile, "                            </ul>\n");
-        fprintf(outputFile, "                        </div>\n");
-        wchar_t descript[] = L"Mô tả";
-        fprintf(outputFile, "                        <div class=\"InfoGroup\">%s</div>\n", wchar_to_byte(descript));
-        fprintf(outputFile, "                        <div class=\"Description\">\n");
-        fprintf(outputFile, "                            %s\n", wchar_to_byte(student->description));
-        fprintf(outputFile, "                        </div>\n");
+
+        if (personalHobby) {
+            wchar_t hobb[] = L"Sở thích";
+            fprintf(outputFile, "                        <div class=\"InfoGroup\">%s</div>\n", wchar_to_byte(hobb));
+            fprintf(outputFile, "                        <div>\n");
+            fprintf(outputFile, "                            <ul class=\"TextInList\">\n");
+            for (int i = 0; i < student->numberOfHobby; ++i) {
+                fprintf(outputFile, "                                <li>%s</li>\n", wchar_to_byte(student->hobby[i].name));
+            }
+            fprintf(outputFile, "                            </ul>\n");
+            fprintf(outputFile, "                        </div>\n");
+        }
+
+        if (personalDescription) {
+            wchar_t descript[] = L"Mô tả";
+            fprintf(outputFile, "                        <div class=\"InfoGroup\">%s</div>\n", wchar_to_byte(descript));
+            fprintf(outputFile, "                        <div>\n");
+            fprintf(outputFile, "                            <ul class=\"TextInList\">\n");
+            fprintf(outputFile, "                               <li>%s</li>\n", wchar_to_byte(student->description));
+            fprintf(outputFile, "                            </ul>\n");
+            fprintf(outputFile, "                        </div>\n");
+        }
+
         fprintf(outputFile, "                    </div>\n");
         fprintf(outputFile, "                </div>\n");
         fprintf(outputFile, "            </div>\n");
@@ -665,7 +768,7 @@ void makePortfolio(Student* student, const char folderPath[]) {
 
 }
 
-void generatePortfolioOnDemand(char demand[], Student**& students, const char folderPath[]) {
+void makePortfolioOnChosenStudent(char demand[], Student**& students, const char folderPath[], const int config[]) {
     int numberOfStudent = 0;
     Student** tmp = students;
     while (*tmp != NULL) {
@@ -674,6 +777,7 @@ void generatePortfolioOnDemand(char demand[], Student**& students, const char fo
     }
 
     char** idList = (char**)malloc(numberOfStudent * sizeof(char*));
+    if (idList == NULL) return;
     for (int i = 0; i < numberOfStudent; i++) {
         idList[i] = (char*)malloc(20 * sizeof(char));
     }
@@ -691,29 +795,31 @@ void generatePortfolioOnDemand(char demand[], Student**& students, const char fo
     for (size_t i = 0; i < index; i++) {
         for(size_t j = 0; j < numberOfStudent; j++) {
             if (strcmp(wchar_to_byte((students[j]->id)), idList[i]) == 0) {
-                makePortfolio(students[j], folderPath);
+                makePortfolio(students[j], folderPath, config);
                 break;
             }
         }
     }
-
+    for (int i = 0; i < numberOfStudent; i++) {
+        free(idList[i]);
+    }
     free(idList);
 }
 
-void generatePortfolio(Student** students, const char folderPath[]) {
-    char sourceCSSFilePath[] = "Personal.css";
-
-    char destinationCSSFilePath[256];
-    strcpy(destinationCSSFilePath, folderPath);
-    strcat(destinationCSSFilePath, "/Personal.css");
-
-    copyFile(sourceCSSFilePath, destinationCSSFilePath);
-
+void generatePortfolio(Student** students, const char folderPath[], const int config[]) {
     Student** currentStudent = students;
 
     while (*currentStudent != NULL) {
-        makePortfolio(*currentStudent, folderPath);
+        makePortfolio(*currentStudent, folderPath, config);
         currentStudent++;
     }
 }
 
+void configField(char field[], int config[]) {
+    char* tok = strtok(field, " ,");
+    while (tok != NULL) {
+        int choice = atoi(tok);
+        config[choice] = 1;
+        tok = strtok(NULL, ", ");
+    }
+}

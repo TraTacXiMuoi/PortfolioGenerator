@@ -7,15 +7,17 @@
 using namespace std;
 
 struct Student {
-	wchar_t id[10];
-    wchar_t name[30];
-    wchar_t faculty[30];
+	wchar_t id[10] = L"";
+    wchar_t name[30] = L"";
+    wchar_t faculty[30] = L"";
     int year = 0;
-    wchar_t dob[15];
-    wchar_t image[20];
-    wchar_t description[1000];
-	Hobby hobby[10];
-    size_t numberOfHobby;
+    wchar_t dob[15] = L"";
+    
+    wchar_t description[1000] = L"";
+    Hobby hobby[10]{};
+    size_t numberOfHobby = 0;
+
+    wchar_t image[20] = L"";
 };
 
 void addStudent(Student**& Students, size_t& numOfStudent, Student* newStudent);

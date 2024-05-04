@@ -16,7 +16,7 @@ void addStudent(Student**& Students, size_t& numOfStudent, Student* newStudent) 
     }
 
     tmp[numOfStudent - 1] = newStudent;
-    for (int i = numOfStudent; i < numOfStudent + 5; i++) {
+    for (size_t i = numOfStudent; i < numOfStudent + 5; i++) {
         tmp[i] = nullptr;
     }
     numOfStudent += 5;
